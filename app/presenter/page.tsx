@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-// 正規化：比較用（英字・カタカナ・記号対応）
 const normalize = (text: string): string => {
   return text
     .toLowerCase()
@@ -15,14 +14,13 @@ const normalize = (text: string): string => {
     );
 };
 
-// 表示用：*などの記号のみ除去
 const cleanVisible = (text: string): string => {
   return text.replace(/[＊*☆★♪♪※]/g, '').trim();
 };
 
 export default function PresenterPage() {
-  const [linesRaw, setLinesRaw] = useState<string[] | null>(null); // 表示用
-  const [linesNormalized, setLinesNormalized] = useState<string[] | null>(null); // 比較用
+  const [linesRaw, setLinesRaw] = useState<string[] | null>(null);
+  const [linesNormalized, setLinesNormalized] = useState<string[] | null>(null);
   const [idx, setIdx] = useState(0);
   const refs = useRef<(HTMLParagraphElement | null)[]>([]);
 
@@ -41,7 +39,7 @@ export default function PresenterPage() {
 
   useEffect(() => {
     if (linesRaw && refs.current[idx]) {
-      refs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      refs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [idx, linesRaw]);
 
