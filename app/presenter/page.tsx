@@ -2,36 +2,51 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+// 正規化：比較用（英字・カタカナ・記号対応）
+const normalize = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[＊*☆★♪♪※「」『』（）()【】<>《》〔〕［］“”'"!！?？.,。、・…─‐\-＿→←↑↓▼▲■◆●○◎]/g, '')
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) =>
+      String.fromCharCode(s.charCodeAt(0) - 0xfee0)
+    )
+    .replace(/[\u30a1-\u30f6]/g, (s) =>
+      String.fromCharCode(s.charCodeAt(0) - 0x60)
+    );
+};
+
+// 表示用：*などの記号のみ除去
+const cleanVisible = (text: string): string => {
+  return text.replace(/[＊*☆★♪♪※]/g, '').trim();
+};
+
 export default function PresenterPage() {
-  const [lines, setLines] = useState<string[] | null>(null);
+  const [linesRaw, setLinesRaw] = useState<string[] | null>(null); // 表示用
+  const [linesNormalized, setLinesNormalized] = useState<string[] | null>(null); // 比較用
   const [idx, setIdx] = useState(0);
   const refs = useRef<(HTMLParagraphElement | null)[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem('tsuidoku_script') || '';
-    setLines(
-      saved
-        .split('\n')
-        .map((line) =>
-          line
-            .replace(
-              /[＊*☆★♪♪※「」『』（）()【】<>《》〔〕［］“”'"!！?？.,。、・…─‐\-＿→←↑↓▼▲■◆●○◎☆★♪※◆■★…※＊]/g,
-              ''
-            )
-            .trim()
-        )
-        .filter((line) => line.length > 0)
-    );
+    const rawOriginal = saved.split('\n').map((line) => line.trim());
+    const visible = rawOriginal
+      .map((line) => cleanVisible(line))
+      .filter((line) => line.length > 0);
+    const normalized = rawOriginal
+      .map((line) => normalize(line))
+      .filter((line) => line.length > 0);
+    setLinesRaw(visible);
+    setLinesNormalized(normalized);
   }, []);
 
   useEffect(() => {
-    if (lines && refs.current[idx]) {
+    if (linesRaw && refs.current[idx]) {
       refs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [idx, lines]);
+  }, [idx, linesRaw]);
 
   useEffect(() => {
-    if (!lines) return;
+    if (!linesNormalized) return;
 
     const SR =
       (window as any).webkitSpeechRecognition ||
@@ -47,19 +62,22 @@ export default function PresenterPage() {
     rec.interimResults = true;
 
     rec.onresult = (e: any) => {
-      const transcript = Array.from(e.results)
-        .map((r: any) => r[0].transcript)
-        .join('');
+      const transcript = normalize(
+        Array.from(e.results)
+          .map((r: any) => r[0].transcript)
+          .join('')
+      );
 
-      const nextIdx = lines.findIndex((line, i) => {
-        if (i <= idx - 3) return false;
-        return transcript.includes(line.slice(0, 5));
-      });
+      const searchRange = linesNormalized.slice(idx, idx + 20);
+      const nextRelative = searchRange.findIndex((line) =>
+        transcript.includes(line.slice(0, 5))
+      );
+      const nextIdx = nextRelative !== -1 ? idx + nextRelative : -1;
 
       if (
         nextIdx !== -1 &&
         nextIdx !== idx &&
-        Math.abs(nextIdx - idx) <= 10
+        Math.abs(nextIdx - idx) <= 20
       ) {
         setIdx(nextIdx);
       }
@@ -67,9 +85,9 @@ export default function PresenterPage() {
 
     rec.start();
     return () => rec.stop();
-  }, [lines, idx]);
+  }, [linesNormalized, idx]);
 
-  if (!lines) {
+  if (!linesRaw) {
     return <main style={{ padding: 20 }}>台本を読み込み中...</main>;
   }
 
@@ -80,19 +98,21 @@ export default function PresenterPage() {
         height: '100vh',
         overflowY: 'scroll',
         backgroundColor: '#ffffff',
+        fontFamily: 'sans-serif',
       }}
     >
-      {lines.map((line, i) => (
+      {linesRaw.map((line, i) => (
         <p
           key={i}
           ref={(el) => {
             refs.current[i] = el;
           }}
           style={{
-            fontSize: 24,
-            marginBottom: 20,
+            fontSize: 16,
+            marginBottom: 12,
             color: i === idx ? '#2563eb' : 'black',
             fontWeight: i === idx ? 'bold' : 'normal',
+            lineHeight: 1.5,
           }}
         >
           {line}
