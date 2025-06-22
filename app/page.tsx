@@ -13,59 +13,121 @@ export default function Page() {
   };
 
   return (
-    <main
+    <div
       style={{
-        padding: '40px 20px',
-        maxWidth: 800,
-        margin: '0 auto',
         fontFamily: 'sans-serif',
+        backgroundColor: '#ffffff',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      <h1
+      {/* ヘッダー */}
+      <header
         style={{
-          fontSize: 32,
-          marginBottom: 24,
+          padding: '24px 20px 16px',
+          borderBottom: '1px solid #eee',
+          backgroundColor: '#fff',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
           textAlign: 'center',
-          color: '#222',
         }}
       >
-        ついどく
-      </h1>
-      <textarea
-        rows={15}
-        style={{
-          width: '100%',
-          fontSize: 16,
-          padding: '12px',
-          border: '1px solid #ccc',
-          borderRadius: 6,
-          resize: 'vertical',
-          outlineColor: '#2563eb',
-        }}
-        value={script}
-        onChange={(e) => setScript(e.target.value)}
-        placeholder="ここに台本を入力してください..."
-      />
-      <div style={{ textAlign: 'center' }}>
-        <button
-          onClick={handleStart}
-          disabled={!script.trim()}
+        <h1
           style={{
-            marginTop: 20,
-            padding: '10px 24px',
-            background: '#2563eb',
-            color: 'white',
-            border: 'none',
-            borderRadius: 6,
-            fontSize: 16,
-            cursor: script.trim() ? 'pointer' : 'not-allowed',
-            opacity: script.trim() ? 1 : 0.5,
-            transition: 'background 0.2s',
+            fontSize: 28,
+            fontWeight: 700,
+            margin: 0,
+            color: '#222',
           }}
         >
-          プレゼン開始
-        </button>
-      </div>
-    </main>
+          ついどく
+        </h1>
+        <p
+          style={{
+            fontSize: 14,
+            color: '#666',
+            marginTop: 4,
+          }}
+        >
+          音声で台本に追従するシンプルなプロンプター
+        </p>
+      </header>
+
+      {/* メイン */}
+      <main
+        style={{
+          padding: 24,
+          maxWidth: 800,
+          margin: '0 auto',
+          flexGrow: 1,
+          width: '100%',
+        }}
+      >
+        <label
+          htmlFor="script"
+          style={{
+            display: 'block',
+            fontSize: 16,
+            marginBottom: 8,
+            color: '#444',
+          }}
+        >
+          台本を入力
+        </label>
+        <textarea
+          id="script"
+          rows={15}
+          style={{
+            width: '100%',
+            fontSize: 16,
+            padding: '12px',
+            border: '1px solid #ccc',
+            borderRadius: 6,
+            resize: 'vertical',
+            outlineColor: '#2563eb',
+            lineHeight: 1.5,
+            fontFamily: 'inherit',
+          }}
+          value={script}
+          onChange={(e) => setScript(e.target.value)}
+          placeholder="ここに台本を入力してください..."
+        />
+
+        <div style={{ textAlign: 'center' }}>
+          <button
+            onClick={handleStart}
+            disabled={!script.trim()}
+            style={{
+              marginTop: 20,
+              padding: '10px 24px',
+              background: '#2563eb',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              fontSize: 16,
+              fontFamily: 'inherit',
+              cursor: script.trim() ? 'pointer' : 'not-allowed',
+              opacity: script.trim() ? 1 : 0.5,
+              transition: 'opacity 0.2s',
+            }}
+          >
+            プレゼン開始
+          </button>
+        </div>
+      </main>
+
+      {/* フッター */}
+      <footer
+        style={{
+          padding: '12px 20px',
+          fontSize: 13,
+          textAlign: 'center',
+          color: '#999',
+          borderTop: '1px solid #eee',
+        }}
+      >
+        © {new Date().getFullYear()} ついどく | 自動スクロール台本アプリ
+      </footer>
+    </div>
   );
 }
